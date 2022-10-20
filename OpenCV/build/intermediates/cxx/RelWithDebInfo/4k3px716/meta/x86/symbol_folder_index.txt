@@ -1,1 +1,0 @@
-C:\Users\kivin\AndroidStudioProjects\SeeTrafficSignsOpenCV\OpenCV\build\intermediates\cxx\RelWithDebInfo\4k3px716\obj\x86

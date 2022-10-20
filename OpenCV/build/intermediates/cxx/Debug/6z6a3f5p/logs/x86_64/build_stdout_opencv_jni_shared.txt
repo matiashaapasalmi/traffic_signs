@@ -1,2 +1,0 @@
-ninja: Entering directory `C:\Users\kivin\AndroidStudioProjects\SeeTrafficSignsOpenCV\OpenCV\.cxx\Debug\6z6a3f5p\x86_64'
-ninja: no work to do.
