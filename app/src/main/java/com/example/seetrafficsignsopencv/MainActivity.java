@@ -27,6 +27,8 @@ import java.util.List;
 
 public class MainActivity extends CameraActivity {
 
+    private ImageClassifier imageClassifier;
+
     private static String LOGTAG = "OpenCV_Log";
     private CameraBridgeViewBase mOpenCvCameraView;
 
@@ -54,6 +56,8 @@ public class MainActivity extends CameraActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        imageClassifier = new ImageClassifier();
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.opencv_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -106,9 +110,6 @@ public class MainActivity extends CameraActivity {
 
         });
 
-
-
-
     }
 
     @Override
@@ -130,6 +131,20 @@ public class MainActivity extends CameraActivity {
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             Mat input_rgba = inputFrame.rgba();
+
+            ImageClass frameClass = imageClassifier.classifyImage(input_rgba);
+
+            System.out.println("Image class is " + frameClass);
+
+            if (frameClass == ImageClass.EMPTY) {
+                // Framesta ei löytyny merkkiä -> Ei vissiin tehä mitään
+            }
+            else {
+                // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
+            }
+
+
+            /* MIKÄ TÄÄ ON JA TARVIIKO TÄTÄ? */
             Mat input_gray = inputFrame.gray();
 
             MatOfPoint corners = new MatOfPoint();
@@ -139,6 +154,8 @@ public class MainActivity extends CameraActivity {
             for(int i = 0; i < corners.rows(); i++){
                 Imgproc.circle(input_rgba,cornercsArr[i],10,new Scalar(0,255,0),2);
             }
+            /* //MIKÄ TÄÄ ON? */
+
 
             return inputFrame.rgba();
         }
