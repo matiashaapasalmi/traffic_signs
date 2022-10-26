@@ -135,26 +135,25 @@ public class MainActivity extends CameraActivity {
             System.out.println("Image class is " + frameClass);
 
             ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
+            runOnUiThread(new Runnable() {
 
-            if (frameClass == ImageClass.EMPTY) {
-                // Framesta ei löytyny merkkiä -> Ei vissiin tehä mitään
+                @Override
+                public void run() {
 
-            }
-            else {
-                // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
-                runOnUiThread(new Runnable() {
+                    // Stuff that updates the UI
+                    // Updates speed limit image
 
-                    @Override
-                    public void run() {
-
-                        // Stuff that updates the UI
-                        // Updates speed limit image
-                        speedImage.setImageResource(frameClass.id());
+                    if (frameClass == ImageClass.EMPTY) {
+                        // Framesta ei löytyny merkkiä -> Ei vissiin tehä mitään
+                        speedImage.setImageResource(ImageClass.EMPTY.id());
 
                     }
-                });
-            }
-
+                    else {
+                        // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
+                        speedImage.setImageResource(frameClass.id());
+                }
+                }
+            });
 
             /* MIKÄ TÄÄ ON JA TARVIIKO TÄTÄ? */
             Mat input_gray = inputFrame.gray();
