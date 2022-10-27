@@ -135,6 +135,7 @@ public class MainActivity extends CameraActivity {
             System.out.println("Image class is " + frameClass);
 
             ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
+            // Päivittää UI:ta crashaa ilman
             runOnUiThread(new Runnable() {
 
                 @Override
