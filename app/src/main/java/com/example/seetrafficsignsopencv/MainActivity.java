@@ -1,14 +1,12 @@
 package com.example.seetrafficsignsopencv;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.graphics.Camera;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -136,13 +134,27 @@ public class MainActivity extends CameraActivity {
 
             System.out.println("Image class is " + frameClass);
 
-            if (frameClass == ImageClass.EMPTY) {
-                // Framesta ei löytyny merkkiä -> Ei vissiin tehä mitään
-            }
-            else {
-                // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
-            }
+            ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
+            // Päivittää UI:ta crashaa ilman
+            runOnUiThread(new Runnable() {
 
+                @Override
+                public void run() {
+
+                    // Stuff that updates the UI
+                    // Updates speed limit image
+
+                    if (frameClass == ImageClass.EMPTY) {
+                        // Framesta ei löytyny merkkiä -> Ei vissiin tehä mitään
+                        speedImage.setImageResource(ImageClass.EMPTY.id());
+
+                    }
+                    else {
+                        // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
+                        speedImage.setImageResource(frameClass.id());
+                }
+                }
+            });
 
             /* MIKÄ TÄÄ ON JA TARVIIKO TÄTÄ? */
             Mat input_gray = inputFrame.gray();
