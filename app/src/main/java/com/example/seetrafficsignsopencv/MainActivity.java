@@ -55,7 +55,7 @@ public class MainActivity extends CameraActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageClassifier = new ImageClassifier();
+        imageClassifier = new ImageClassifier(this);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.opencv_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
