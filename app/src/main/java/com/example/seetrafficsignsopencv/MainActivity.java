@@ -132,8 +132,6 @@ public class MainActivity extends CameraActivity {
 
             ImageClass frameClass = imageClassifier.classifyImage(input_rgba);
 
-            System.out.println("Image class is " + frameClass);
-
             ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
             // Päivittää UI:ta crashaa ilman
             runOnUiThread(new Runnable() {

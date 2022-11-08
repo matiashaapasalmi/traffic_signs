@@ -28,6 +28,7 @@ public class ImageClassifier {
 
     public ImageClass classifyImage(Mat image) {
 
+        ImageClass imageClass = ImageClass.EMPTY;
 
         try {
             Detect model = Detect.newInstance(context);
@@ -75,9 +76,21 @@ public class ImageClassifier {
             float[] confidences = outputFeature0.getFloatArray();
 
 
-            for (float c : confidences){
-                System.out.println("c0: " + c);
+
+            Integer bestIndex = null;
+            float confidence = 0;
+            for (int i = 0; i < confidences.length; i++){
+                if(bestIndex == null || confidences[i] > confidences[bestIndex]){
+                    bestIndex = i;
+                    confidence = confidences[i];
+                }
             }
+
+            imageClass = ImageClass.values()[bestIndex];
+
+
+
+            System.out.println("Image class is " + imageClass + " with confidence of " + confidence);
 
 
 //            for (float c : outputFeature1.getFloatArray()){
@@ -100,6 +113,7 @@ public class ImageClassifier {
             model.close();
         } catch (IOException e) {
             // TODO Handle the exception
+
         }
 
 
@@ -112,8 +126,9 @@ public class ImageClassifier {
 
         // TÄSSÄ PITÄIS KEKSIÄ MIHIN LUOKKAAN KUVA KUULUU
 
-        int randomClass = (int)(Math.random() * ImageClass.values().length);
-        ImageClass imageClass = ImageClass.values()[randomClass];
+        // Random
+//        int randomClass = (int)(Math.random() * ImageClass.values().length);
+//        ImageClass imageClass = ImageClass.values()[randomClass];
 
         return imageClass;
     }
