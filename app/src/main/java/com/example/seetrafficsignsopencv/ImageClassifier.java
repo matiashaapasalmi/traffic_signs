@@ -20,8 +20,11 @@ public class ImageClassifier {
 
     private int imageSize;
 
+    private float detectionThreshold;
+
     public ImageClassifier(Context context) {
         this.imageSize = 320;
+        this.detectionThreshold = (float) 0.20;
         this.context = context;
 
     }
@@ -39,7 +42,6 @@ public class ImageClassifier {
             Utils.matToBitmap(image, bitmap);
             bitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, false);
 
-            
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, imageSize, imageSize, 3}, DataType.FLOAT32);
 
             // Työnnetään bitmap inputfeatureen
@@ -61,8 +63,6 @@ public class ImageClassifier {
 
             inputFeature0.loadBuffer(byteBuffer);
 
-
-
             // Runs model inference and gets result.
             Detect.Outputs outputs = model.process(inputFeature0);
 
@@ -73,64 +73,31 @@ public class ImageClassifier {
             TensorBuffer outputFeature3 = outputs.getOutputFeature3AsTensorBuffer();
 
 
-            float[] confidences = outputFeature0.getFloatArray();
+            float[] confidences     = outputFeature0.getFloatArray();
+            float[] detectionPoints = outputFeature1.getFloatArray();
+            int[]   detections      = outputFeature3.getIntArray();
 
-
-
-            Integer bestIndex = null;
-            float confidence = 0;
-            for (int i = 0; i < confidences.length; i++){
-                if(bestIndex == null || confidences[i] > confidences[bestIndex]){
-                    bestIndex = i;
-                    confidence = confidences[i];
-                }
-            }
+            int bestIndex = detections[0];
+            float bestConfidence = confidences[0];
 
             imageClass = ImageClass.values()[bestIndex];
 
+            System.out.println("DETECTION DEBUG: ImageClass: " + imageClass);
+            System.out.println("DETECTION DEBUG: Confidence: " + bestConfidence);
 
+            if(bestConfidence < this.detectionThreshold) {
+                System.out.println("DETECTION DEBUG: Confidence under threshold. Setting output to EMPTY");
+                imageClass = ImageClass.EMPTY;
+            }
 
-            System.out.println("Image class is " + imageClass + " with confidence of " + confidence);
-
-
-//            for (float c : outputFeature1.getFloatArray()){
-//                System.out.println("c1: " + c);
-//            }
-//            for (float c : outputFeature2.getFloatArray()){
-//                System.out.println("c2: " + c);
-//            }
-//            for (float c : outputFeature2.getFloatArray()){
-//                System.out.println("c3: " + c);
-//            }
-
-
-
-//            System.out.println("confidences 1: " + outputFeature1.getFloatArray());
-//            System.out.println("confidences 2: " + outputFeature2.getFloatArray());
-//            System.out.println("confidences 3: " + outputFeature3.getFloatArray());
-
-            // Releases model resources if no longer used.
             model.close();
+
         } catch (IOException e) {
             // TODO Handle the exception
-
         }
 
-
-
-
-
-
-
-
-
-        // TÄSSÄ PITÄIS KEKSIÄ MIHIN LUOKKAAN KUVA KUULUU
-
-        // Random
-//        int randomClass = (int)(Math.random() * ImageClass.values().length);
-//        ImageClass imageClass = ImageClass.values()[randomClass];
-
         return imageClass;
+
     }
 
 
