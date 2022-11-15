@@ -1,5 +1,7 @@
 package com.example.seetrafficsignsopencv;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -8,6 +10,9 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceManager;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraActivity;
@@ -49,11 +54,19 @@ public class MainActivity extends CameraActivity {
 
     Button btn_setting,btn_camera,btn_exit;
     FrameLayout frameLayout;
+    Boolean debug_mode,fps_counter;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        debug_mode = (prefs.getBoolean("debug_mode",true));
+        fps_counter = (prefs.getBoolean("fps_counter",true));
+        Log.d("JOTAIN", String.valueOf(prefs.getAll()));
+
 
         imageClassifier = new ImageClassifier(this);
 
@@ -70,9 +83,8 @@ public class MainActivity extends CameraActivity {
         btn_setting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-
-
-                Toast.makeText(MainActivity.this, "You clicked settings.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(intent);
             }
         });
 
