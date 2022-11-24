@@ -2,6 +2,7 @@ package com.example.seetrafficsignsopencv;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -62,6 +63,7 @@ public class MainActivity extends CameraActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         debug_mode = (prefs.getBoolean("debug_mode",true));
         fps_counter = (prefs.getBoolean("fps_counter",true));
