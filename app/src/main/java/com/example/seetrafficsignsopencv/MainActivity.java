@@ -155,12 +155,7 @@ public class MainActivity extends CameraActivity {
                     // Stuff that updates the UI
                     // Updates speed limit image
 
-                    if (frameClass == ImageClass.EMPTY) {
-                        // Framesta ei löytyny merkkiä -> Ei vissiin tehä mitään
-                        speedImage.setImageResource(ImageClass.EMPTY.id());
-
-                    }
-                    else {
+                    if (frameClass != ImageClass.EMPTY) {
                         // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
                         speedImage.setImageResource(frameClass.id());
                     }
@@ -169,6 +164,11 @@ public class MainActivity extends CameraActivity {
 
             if (frameClass != ImageClass.EMPTY && debug_mode){
                 Imgproc.rectangle(input_rgba, detection.startPoint, detection.endPoint, new Scalar(255, 222, 0), 3 ) ;
+
+                int confidence = (int)(detection.confidence * 100 + 0.5);
+
+                Imgproc.putText(input_rgba, frameClass.toString() + " " + confidence + " %", new Point(10, 50), Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,
+                        new Scalar(255, 222, 0), 2, Imgproc.LINE_AA, false);
             }
 
             return input_rgba;
