@@ -142,7 +142,8 @@ public class MainActivity extends CameraActivity {
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             Mat input_rgba = inputFrame.rgba();
 
-            ImageClass frameClass = imageClassifier.classifyImage(input_rgba);
+            Detection detection = imageClassifier.classifyImage(input_rgba);
+            ImageClass frameClass = detection.imgClass;
 
             ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
             // Päivittää UI:ta crashaa ilman
@@ -162,24 +163,15 @@ public class MainActivity extends CameraActivity {
                     else {
                         // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
                         speedImage.setImageResource(frameClass.id());
-                }
+                    }
                 }
             });
 
-            /* MIKÄ TÄÄ ON JA TARVIIKO TÄTÄ? */
-            Mat input_gray = inputFrame.gray();
-
-            MatOfPoint corners = new MatOfPoint();
-            Imgproc.goodFeaturesToTrack(input_gray,corners,20,0.01,10,new Mat(),3,false);
-            Point[] cornercsArr = corners.toArray();
-
-            for(int i = 0; i < corners.rows(); i++){
-                Imgproc.circle(input_rgba,cornercsArr[i],10,new Scalar(0,255,0),2);
+            if (frameClass != ImageClass.EMPTY && debug_mode){
+                Imgproc.rectangle(input_rgba, detection.startPoint, detection.endPoint, new Scalar(255, 222, 0), 3 ) ;
             }
-            /* //MIKÄ TÄÄ ON? */
 
-
-            return inputFrame.rgba();
+            return input_rgba;
         }
     };
 

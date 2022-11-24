@@ -7,6 +7,7 @@ import com.example.seetrafficsignsopencv.ml.Detect;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
@@ -29,20 +30,26 @@ public class ImageClassifier {
 
     }
 
-    public ImageClass classifyImage(Mat image) {
+    public Detection classifyImage(Mat image) {
 
         ImageClass imageClass = ImageClass.EMPTY;
+
+        float dStartPointX = 0;
+        float dStartPointY = 0;
+        float dEndPointX = 0;
+        float dEndPointY = 0;
 
         try {
             Detect model = Detect.newInstance(context);
 
             // Konvertoidaan Mat -> Bitmap
 
-            Bitmap bitmap = Bitmap.createBitmap(image.cols(), image.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(image, bitmap);
-            bitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, false);
+            Bitmap origBitmap = Bitmap.createBitmap(image.cols(), image.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(image, origBitmap);
+            Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, imageSize, imageSize, false);
 
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, imageSize, imageSize, 3}, DataType.FLOAT32);
+
 
             // Työnnetään bitmap inputfeatureen
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3);
@@ -82,6 +89,24 @@ public class ImageClassifier {
 
             imageClass = ImageClass.values()[bestIndex];
 
+            dStartPointY = origBitmap.getHeight() * detectionPoints[0];
+            dStartPointX = origBitmap.getWidth() * detectionPoints[1];
+            dEndPointY = origBitmap.getHeight() * detectionPoints[2];
+            dEndPointX = origBitmap.getWidth() * detectionPoints[3];
+
+
+            System.out.println("bitmap sizes --------------------------------");
+
+            System.out.println(image.cols());
+            System.out.println(image.rows());
+
+            System.out.println(origBitmap.getWidth());
+            System.out.println(origBitmap.getHeight());
+            System.out.println(bitmap.getWidth());
+            System.out.println(bitmap.getWidth());
+            System.out.println("bitmap sizes ////////////////////////////////");
+
+
             System.out.println("DETECTION DEBUG: ImageClass: " + imageClass);
             System.out.println("DETECTION DEBUG: Confidence: " + bestConfidence);
 
@@ -96,7 +121,14 @@ public class ImageClassifier {
             // TODO Handle the exception
         }
 
-        return imageClass;
+        System.out.println(dStartPointX);
+        System.out.println(dStartPointY);
+        System.out.println(dEndPointX);
+        System.out.println(dEndPointY);
+
+
+        return new Detection(imageClass, new Point(dStartPointX,dStartPointY), new Point(dEndPointX,dEndPointY));
+        //return new Detection(imageClass, new Point(60,60), new Point(200,200));
 
     }
 
