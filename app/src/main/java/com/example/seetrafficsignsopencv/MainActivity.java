@@ -39,24 +39,24 @@ public class MainActivity extends CameraActivity {
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
-            switch (status){
-                case LoaderCallbackInterface.SUCCESS:{
-                    Log.v(LOGTAG,"OpenCV loaded");
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.v(LOGTAG, "OpenCV loaded");
                     mOpenCvCameraView.enableView();
-                } break;
-                default:
-                {
+                }
+                break;
+                default: {
                     super.onManagerConnected(status);
-                } break;
+                }
+                break;
             }
 
         }
     };
 
-    Button btn_setting,btn_camera,btn_exit;
+    Button btn_setting, btn_camera, btn_exit;
     FrameLayout frameLayout;
-    Boolean debug_mode,fps_counter;
-
+    Boolean debug_mode, fps_counter;
 
 
     @Override
@@ -65,8 +65,8 @@ public class MainActivity extends CameraActivity {
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        debug_mode = (prefs.getBoolean("debug_mode",true));
-        fps_counter = (prefs.getBoolean("fps_counter",true));
+        debug_mode = (prefs.getBoolean("debug_mode", true));
+        fps_counter = (prefs.getBoolean("fps_counter", true));
         Log.d("JOTAIN", String.valueOf(prefs.getAll()));
 
 
@@ -79,53 +79,41 @@ public class MainActivity extends CameraActivity {
         btn_setting = findViewById(R.id.btn_setting);
         btn_camera = (Button) findViewById(R.id.btn_camera);
 
-        btn_exit=findViewById(R.id.btn_exit);
-
+        btn_exit = findViewById(R.id.btn_exit);
 
         btn_setting.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
         });
 
-
-        btn_camera.setOnClickListener(new View.OnClickListener(){
+        btn_camera.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                if(mOpenCvCameraView.getVisibility() == View.VISIBLE){
+            public void onClick(View view) {
+                if (mOpenCvCameraView.getVisibility() == View.VISIBLE) {
                     mOpenCvCameraView.setVisibility(View.INVISIBLE);
-
-
-                }
-                else{
+                } else {
                     mOpenCvCameraView.setVisibility(View.VISIBLE);
                 }
-
-
-                Toast.makeText(MainActivity.this, "You clicked camera.",Toast.LENGTH_SHORT).show();
-
-            }
-
+                Toast.makeText(MainActivity.this, "You clicked camera.", Toast.LENGTH_SHORT).show();
+           }
         });
 
-
-        btn_exit.setOnClickListener(new View.OnClickListener(){
+        btn_exit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 moveTaskToBack(true);
                 android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(1);
-
             }
-
         });
 
     }
 
     @Override
-    protected List<?extends CameraBridgeViewBase> getCameraViewList(){
+    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
         return Collections.singletonList(mOpenCvCameraView);
     }
 
@@ -164,42 +152,42 @@ public class MainActivity extends CameraActivity {
                 }
             });
 
-            if (frameClass != ImageClass.EMPTY && debug_mode){
-                Imgproc.rectangle(input_rgba, detection.startPoint, detection.endPoint, new Scalar(255, 222, 0), 3 ) ;
+            if (frameClass != ImageClass.EMPTY && debug_mode) {
+                Imgproc.rectangle(input_rgba, detection.startPoint, detection.endPoint, new Scalar(255, 222, 0), 3);
 
-                int confidence = (int)(detection.confidence * 100 + 0.5);
+                int confidence = (int) (detection.confidence * 100 + 0.5);
 
-                Imgproc.putText(input_rgba, frameClass.toString() + " " + confidence + " %", new Point(10, 50), Imgproc.FONT_HERSHEY_SIMPLEX, 1.5,
-                        new Scalar(255, 222, 0), 2, Imgproc.LINE_AA, false);
+                Imgproc.putText(input_rgba, frameClass.toString() + " " + confidence + " %", new Point(10, 50),
+                        Imgproc.FONT_HERSHEY_SIMPLEX, 1.5, new Scalar(255, 222, 0), 2, Imgproc.LINE_AA, false);
             }
-
             return input_rgba;
         }
     };
 
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
-        if(mOpenCvCameraView != null){
+        if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
     }
+
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
-        if(!OpenCVLoader.initDebug()){
-            Log.d(LOGTAG,"OpenCV not found");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION,this,mLoaderCallback);
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(LOGTAG, "OpenCV not found");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
         } else {
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
-        if(mOpenCvCameraView != null){
+        if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
     }

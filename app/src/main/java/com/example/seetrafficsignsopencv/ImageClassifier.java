@@ -55,12 +55,12 @@ public class ImageClassifier {
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3);
             byteBuffer.order(ByteOrder.nativeOrder());
 
-            int [] intValues = new int[imageSize * imageSize];
+            int[] intValues = new int[imageSize * imageSize];
             bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
 
             int pixel = 0;
-            for(int i = 0; i < imageSize; i++){
-                for(int j = 0; j < imageSize; j++){
+            for (int i = 0; i < imageSize; i++) {
+                for (int j = 0; j < imageSize; j++) {
                     int val = intValues[pixel++]; // RGB
                     byteBuffer.putFloat(((val >> 16) & 0xFF) * (1.f / 255.f));
                     byteBuffer.putFloat(((val >> 8) & 0xFF) * (1.f / 255.f));
@@ -79,10 +79,9 @@ public class ImageClassifier {
             TensorBuffer outputFeature2 = outputs.getOutputFeature2AsTensorBuffer();
             TensorBuffer outputFeature3 = outputs.getOutputFeature3AsTensorBuffer();
 
-
-            float[] confidences     = outputFeature0.getFloatArray();
+            float[] confidences = outputFeature0.getFloatArray();
             float[] detectionPoints = outputFeature1.getFloatArray();
-            int[]   detections      = outputFeature3.getIntArray();
+            int[] detections = outputFeature3.getIntArray();
 
             int bestIndex = detections[0];
             bestConfidence = confidences[0];
@@ -94,7 +93,7 @@ public class ImageClassifier {
             dEndPointY = origBitmap.getHeight() * detectionPoints[2];
             dEndPointX = origBitmap.getWidth() * detectionPoints[3];
 
-            if(bestConfidence < this.detectionThreshold) {
+            if (bestConfidence < this.detectionThreshold) {
                 System.out.println("DETECTION DEBUG: Confidence under threshold. Setting output to EMPTY");
                 imageClass = ImageClass.EMPTY;
             }
@@ -105,7 +104,7 @@ public class ImageClassifier {
             // TODO Handle the exception
         }
 
-        return new Detection(imageClass, new Point(dStartPointX,dStartPointY), new Point(dEndPointX,dEndPointY), bestConfidence);
+        return new Detection(imageClass, new Point(dStartPointX, dStartPointY), new Point(dEndPointX, dEndPointY), bestConfidence);
 
     }
 
