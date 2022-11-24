@@ -25,9 +25,8 @@ public class ImageClassifier {
 
     public ImageClassifier(Context context) {
         this.imageSize = 320;
-        this.detectionThreshold = (float) 0.20;
+        this.detectionThreshold = (float) 0.40;
         this.context = context;
-
     }
 
     public Detection classifyImage(Mat image) {
@@ -39,6 +38,8 @@ public class ImageClassifier {
         float dEndPointX = 0;
         float dEndPointY = 0;
 
+        float bestConfidence = 0;
+
         try {
             Detect model = Detect.newInstance(context);
 
@@ -49,7 +50,6 @@ public class ImageClassifier {
             Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, imageSize, imageSize, false);
 
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, imageSize, imageSize, 3}, DataType.FLOAT32);
-
 
             // Työnnetään bitmap inputfeatureen
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3);
@@ -85,7 +85,7 @@ public class ImageClassifier {
             int[]   detections      = outputFeature3.getIntArray();
 
             int bestIndex = detections[0];
-            float bestConfidence = confidences[0];
+            bestConfidence = confidences[0];
 
             imageClass = ImageClass.values()[bestIndex];
 
@@ -93,22 +93,6 @@ public class ImageClassifier {
             dStartPointX = origBitmap.getWidth() * detectionPoints[1];
             dEndPointY = origBitmap.getHeight() * detectionPoints[2];
             dEndPointX = origBitmap.getWidth() * detectionPoints[3];
-
-
-            System.out.println("bitmap sizes --------------------------------");
-
-            System.out.println(image.cols());
-            System.out.println(image.rows());
-
-            System.out.println(origBitmap.getWidth());
-            System.out.println(origBitmap.getHeight());
-            System.out.println(bitmap.getWidth());
-            System.out.println(bitmap.getWidth());
-            System.out.println("bitmap sizes ////////////////////////////////");
-
-
-            System.out.println("DETECTION DEBUG: ImageClass: " + imageClass);
-            System.out.println("DETECTION DEBUG: Confidence: " + bestConfidence);
 
             if(bestConfidence < this.detectionThreshold) {
                 System.out.println("DETECTION DEBUG: Confidence under threshold. Setting output to EMPTY");
@@ -121,14 +105,7 @@ public class ImageClassifier {
             // TODO Handle the exception
         }
 
-        System.out.println(dStartPointX);
-        System.out.println(dStartPointY);
-        System.out.println(dEndPointX);
-        System.out.println(dEndPointY);
-
-
-        return new Detection(imageClass, new Point(dStartPointX,dStartPointY), new Point(dEndPointX,dEndPointY));
-        //return new Detection(imageClass, new Point(60,60), new Point(200,200));
+        return new Detection(imageClass, new Point(dStartPointX,dStartPointY), new Point(dEndPointX,dEndPointY), bestConfidence);
 
     }
 

@@ -57,8 +57,10 @@
         android:id="@+id/SLDisplay"
         android:layout_width="313dp"
         android:layout_height="255dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="4dp"
         android:scaleType="centerInside"
-        android:src="@drawable/sl60"
+        android:src="@drawable/sle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
