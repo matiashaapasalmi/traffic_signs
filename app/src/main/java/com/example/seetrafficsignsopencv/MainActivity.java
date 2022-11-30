@@ -92,10 +92,10 @@ public class MainActivity extends CameraActivity {
         btn_camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mOpenCvCameraView.getVisibility() == View.VISIBLE) {
-                    mOpenCvCameraView.setVisibility(View.INVISIBLE);
+                if (mOpenCvCameraView.getAlpha() == 0) {
+                    mOpenCvCameraView.setAlpha(1);
                 } else {
-                    mOpenCvCameraView.setVisibility(View.VISIBLE);
+                    mOpenCvCameraView.setAlpha(0);
                 }
                 Toast.makeText(MainActivity.this, "You clicked camera.", Toast.LENGTH_SHORT).show();
            }
