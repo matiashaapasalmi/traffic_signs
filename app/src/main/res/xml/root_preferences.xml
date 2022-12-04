@@ -6,10 +6,19 @@
             app:key="debug_mode"
             app:title="Debug mode"
             app:defaultValue="false"/>
-        <SwitchPreferenceCompat
-            app:key="fps_counter"
-            app:title="FPS counter"
-            app:defaultValue="false"/>
+
+        <ListPreference
+            app:entries="@array/model_entries"
+            app:entryValues="@array/model_values"
+            app:key="models"
+            app:title="Detection model"
+            app:defaultValue="320BW"
+            app:useSimpleSummaryProvider="true"
+
+
+
+
+            />
 
     </PreferenceCategory>
 

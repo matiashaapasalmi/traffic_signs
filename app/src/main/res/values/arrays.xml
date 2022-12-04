@@ -1,12 +1,18 @@
 <resources>
     <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+    <string-array name="model_entries">
+        <item>320p Black and white</item>
+        <item>640p Black and white</item>
+        <item>Combined detection classification</item>
+        <item>320p coloured</item>
+        <item>640p coloured</item>
     </string-array>
 
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
+    <string-array name="model_values">
+        <item>320BW</item>
+        <item>640BW</item>
+        <item>CDC</item>
+        <item>320C</item>
+        <item>640C</item>
     </string-array>
 </resources>
