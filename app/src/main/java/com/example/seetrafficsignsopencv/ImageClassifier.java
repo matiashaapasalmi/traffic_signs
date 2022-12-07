@@ -340,7 +340,7 @@ public class ImageClassifier {
                 }
             }
 
-            System.out.println(Arrays.toString(confidences));
+            System.out.println("Confidences " + Arrays.toString(confidences));
 
             init.imgClass = ImageClass.values()[maxPos];
 
