@@ -67,7 +67,7 @@ public class MainActivity extends CameraActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         debug_mode = (prefs.getBoolean("debug_mode", true));
-        model = (prefs.getString("models","320BW"));
+        model = (prefs.getString("models","CDC"));
         Log.d("MODEL",model);
 
 
@@ -131,37 +131,61 @@ public class MainActivity extends CameraActivity {
 
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-            Mat input_rgba = inputFrame.rgba();
 
-            Detection detection = imageClassifier.classifyImage(input_rgba);
-            ImageClass frameClass = detection.imgClass;
+            try {
 
-            ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
-            // Päivittää UI:ta crashaa ilman
-            runOnUiThread(new Runnable() {
+                Mat input_rgba = inputFrame.rgba();
 
-                @Override
-                public void run() {
+                Detection detection = null;
 
-                    // Stuff that updates the UI
-                    // Updates speed limit image
+                System.out.println("Detection with: " + model);
 
-                    if (frameClass != ImageClass.EMPTY) {
-                        // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
-                        speedImage.setImageResource(frameClass.id());
+                if (model.equals("640BW")) {
+                    detection = imageClassifier.classifyImageBWLarge(input_rgba);
+                } else if (model.equals("640C")) {
+                    detection = imageClassifier.classifyImageColorLarge(input_rgba);
+                } else if (model.equals("CDC")) {
+                    detection = imageClassifier.classifyImageCDC(input_rgba);
+                } else if (model.equals("320BW")) {
+                    detection = imageClassifier.classifyImageBWSmall(input_rgba);
+                } else if (model.equals("320C")) {
+                    detection = imageClassifier.classifyImageColorSmall(input_rgba);
+                } else {
+                    detection = imageClassifier.classifyImage(input_rgba);
+                } // 320C
+
+                ImageClass frameClass = detection.imgClass;
+
+                ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
+                // Päivittää UI:ta crashaa ilman
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        // Stuff that updates the UI
+                        // Updates speed limit image
+
+                        if (frameClass != ImageClass.EMPTY) {
+                            // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
+                            speedImage.setImageResource(frameClass.id());
+                        }
                     }
+                });
+
+                if (frameClass != ImageClass.EMPTY && debug_mode) {
+                    Imgproc.rectangle(input_rgba, detection.startPoint, detection.endPoint, new Scalar(255, 222, 0), 3);
+
+                    int confidence = (int) (detection.confidence * 100 + 0.5);
+
+                    Imgproc.putText(input_rgba, frameClass.toString() + " " + confidence + " %", new Point(10, 50),
+                            Imgproc.FONT_HERSHEY_SIMPLEX, 1.5, new Scalar(255, 222, 0), 2, Imgproc.LINE_AA, false);
                 }
-            });
-
-            if (frameClass != ImageClass.EMPTY && debug_mode) {
-                Imgproc.rectangle(input_rgba, detection.startPoint, detection.endPoint, new Scalar(255, 222, 0), 3);
-
-                int confidence = (int) (detection.confidence * 100 + 0.5);
-
-                Imgproc.putText(input_rgba, frameClass.toString() + " " + confidence + " %", new Point(10, 50),
-                        Imgproc.FONT_HERSHEY_SIMPLEX, 1.5, new Scalar(255, 222, 0), 2, Imgproc.LINE_AA, false);
+                return input_rgba;
             }
-            return input_rgba;
+            catch (Exception e){
+                return inputFrame.rgba();
+            }
         }
     };
 

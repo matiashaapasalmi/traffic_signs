@@ -8,14 +8,12 @@
             app:defaultValue="false"/>
 
         <ListPreference
+            app:defaultValue="CDC"
             app:entries="@array/model_entries"
             app:entryValues="@array/model_values"
             app:key="models"
             app:title="Detection model"
-            app:defaultValue="320BW"
             app:useSimpleSummaryProvider="true"
-
-
 
 
             />
