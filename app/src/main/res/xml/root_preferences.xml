@@ -8,7 +8,7 @@
             app:defaultValue="false"/>
 
         <ListPreference
-            app:defaultValue="320C"
+            app:defaultValue="CDC"
             app:entries="@array/model_entries"
             app:entryValues="@array/model_values"
             app:key="models"

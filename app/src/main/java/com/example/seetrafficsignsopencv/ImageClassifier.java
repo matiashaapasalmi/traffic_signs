@@ -7,6 +7,7 @@ import com.example.seetrafficsignsopencv.ml.Detect; // 320x320 color
 
 import com.example.seetrafficsignsopencv.ml.ColorLarge;
 import com.example.seetrafficsignsopencv.ml.BWLarge;
+import com.example.seetrafficsignsopencv.ml.Icmodel;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -286,5 +287,71 @@ public class ImageClassifier {
         return new Detection(imageClass, new Point(dStartPointX, dStartPointY), new Point(dEndPointX, dEndPointY), bestConfidence);
     }
 
+    public Detection classifyImageCDC(Mat image) {
+
+        Detection init = classifyImageColorSmall(image);
+
+        System.out.println("Detection with CDC");
+
+        if (init.imgClass == ImageClass.EMPTY)
+            return init;
+
+        Mat croppedImg = image.submat((int) init.startPoint.y, (int) init.endPoint.y, (int) init.startPoint.x, (int) init.endPoint.x);
+
+        Bitmap origBitmap = Bitmap.createBitmap(croppedImg.cols(), croppedImg.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(croppedImg, origBitmap);
+        Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, 32, 32, false);
+
+        try {
+            Icmodel model = Icmodel.newInstance(context);
+
+            // Creates inputs for reference.
+            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 32, 32, 3}, DataType.FLOAT32);
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * 32 * 32 * 3);
+            byteBuffer.order(ByteOrder.nativeOrder());
+
+            int[] intValues = new int[32 * 32];
+            bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+            int pixel = 0;
+            //iterate over each pixel and extract R, G, and B values. Add those values individually to the byte buffer.
+            for(int i = 0; i < 32; i ++){
+                for(int j = 0; j < 32; j++){
+                    int val = intValues[pixel++]; // RGB
+                    byteBuffer.putFloat(((val >> 16) & 0xFF) * (1.f / 1));
+                    byteBuffer.putFloat(((val >> 8) & 0xFF) * (1.f / 1));
+                    byteBuffer.putFloat((val & 0xFF) * (1.f / 1));
+                }
+            }
+
+            inputFeature0.loadBuffer(byteBuffer);
+
+            // Runs model inference and gets result.
+            Icmodel.Outputs outputs = model.process(inputFeature0);
+            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+            float[] confidences = outputFeature0.getFloatArray();
+            // find the index of the class with the biggest confidence.
+            int maxPos = 0;
+            float maxConfidence = 0;
+            for (int i = 0; i < confidences.length; i++) {
+                if (confidences[i] > maxConfidence) {
+                    maxConfidence = confidences[i];
+                    maxPos = i;
+                }
+            }
+
+            System.out.println(Arrays.toString(confidences));
+
+            init.imgClass = ImageClass.values()[maxPos];
+
+            // Releases model resources if no longer used.
+            model.close();
+
+        } catch (IOException e) {
+            // TODO Handle the exception
+        }
+
+        return init;
+    }
 }
 

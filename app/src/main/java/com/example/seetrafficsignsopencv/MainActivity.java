@@ -67,7 +67,7 @@ public class MainActivity extends CameraActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         debug_mode = (prefs.getBoolean("debug_mode", true));
-        model = (prefs.getString("models","320C"));
+        model = (prefs.getString("models","CDC"));
         Log.d("MODEL",model);
 
 
@@ -139,6 +139,7 @@ public class MainActivity extends CameraActivity {
 
             if      (model.equals("640BW")) { detection = imageClassifier.classifyImageBWLarge(input_rgba); }
             else if (model.equals("640C"))  { detection = imageClassifier.classifyImageColorLarge(input_rgba); }
+            else if (model.equals("CDC")) { detection = imageClassifier.classifyImageCDC(input_rgba); }
             else if (model.equals("320BW")) { detection = imageClassifier.classifyImageBWSmall(input_rgba); }
             else if (model.equals("320C"))  { detection = imageClassifier.classifyImageColorSmall(input_rgba); }
             else                       { detection = imageClassifier.classifyImage(input_rgba); } // 320C
