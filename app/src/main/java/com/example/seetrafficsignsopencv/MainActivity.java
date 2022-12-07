@@ -67,7 +67,7 @@ public class MainActivity extends CameraActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         debug_mode = (prefs.getBoolean("debug_mode", true));
-        model = (prefs.getString("models","320BW"));
+        model = (prefs.getString("models","320C"));
         Log.d("MODEL",model);
 
 
@@ -133,7 +133,16 @@ public class MainActivity extends CameraActivity {
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             Mat input_rgba = inputFrame.rgba();
 
-            Detection detection = imageClassifier.classifyImage(input_rgba);
+            Detection detection = null;
+
+            System.out.println("Detection with: " + model);
+
+            if      (model.equals("640BW")) { detection = imageClassifier.classifyImageBWLarge(input_rgba); }
+            else if (model.equals("640C"))  { detection = imageClassifier.classifyImageColorLarge(input_rgba); }
+            else if (model.equals("320BW")) { detection = imageClassifier.classifyImageBWSmall(input_rgba); }
+            else if (model.equals("320C"))  { detection = imageClassifier.classifyImageColorSmall(input_rgba); }
+            else                       { detection = imageClassifier.classifyImage(input_rgba); } // 320C
+
             ImageClass frameClass = detection.imgClass;
 
             ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
