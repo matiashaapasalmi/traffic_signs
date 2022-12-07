@@ -56,7 +56,8 @@ public class MainActivity extends CameraActivity {
 
     Button btn_setting, btn_camera, btn_exit;
     FrameLayout frameLayout;
-    Boolean debug_mode, fps_counter;
+    Boolean debug_mode;
+    String model;
 
 
     @Override
@@ -66,8 +67,9 @@ public class MainActivity extends CameraActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         debug_mode = (prefs.getBoolean("debug_mode", true));
-        fps_counter = (prefs.getBoolean("fps_counter", true));
-        Log.d("JOTAIN", String.valueOf(prefs.getAll()));
+        model = (prefs.getString("models","320BW"));
+        Log.d("MODEL",model);
+
 
 
         imageClassifier = new ImageClassifier(this);
@@ -97,7 +99,6 @@ public class MainActivity extends CameraActivity {
                 } else {
                     mOpenCvCameraView.setAlpha(0);
                 }
-                Toast.makeText(MainActivity.this, "You clicked camera.", Toast.LENGTH_SHORT).show();
            }
         });
 
