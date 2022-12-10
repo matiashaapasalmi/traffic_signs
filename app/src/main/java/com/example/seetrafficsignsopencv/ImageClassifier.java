@@ -3,10 +3,12 @@ package com.example.seetrafficsignsopencv;
 import android.content.Context;
 import android.graphics.Bitmap;
 
-import com.example.seetrafficsignsopencv.ml.Detect; // 320x320 color
-
-import com.example.seetrafficsignsopencv.ml.ColorLarge;
+import com.example.seetrafficsignsopencv.ml.BWSmall;
 import com.example.seetrafficsignsopencv.ml.BWLarge;
+import com.example.seetrafficsignsopencv.ml.ColorSmall;
+import com.example.seetrafficsignsopencv.ml.ColorLarge;
+
+import com.example.seetrafficsignsopencv.ml.Detect;
 import com.example.seetrafficsignsopencv.ml.Icmodel;
 
 import org.opencv.android.Utils;
@@ -25,8 +27,8 @@ public class ImageClassifier {
 
     private final Context context;
 
-    private int imageSizeLarge;
-    private int imageSizeSmall;
+    private final int imageSizeLarge;
+    private final int imageSizeSmall;
 
     private float detectionThreshold;
 
@@ -35,7 +37,7 @@ public class ImageClassifier {
         this.imageSizeLarge = 640;
         this.imageSizeSmall = 320;
 
-        this.detectionThreshold = (float) 0.40;
+        this.detectionThreshold = (float) 0.20;
         this.context = context;
     }
 
@@ -64,9 +66,9 @@ public class ImageClassifier {
         return this.classifyImageColorSmall(image);
     }
 
-    public Detection classifyImageColorSmall(Mat image) {
+    public Detection classifyImageColorSmallOld(Mat image) {
 
-        System.out.println("Detection with Color 320x320");
+        System.out.println("Detection with Old 1.1 Color 320x320");
 
         ImageClass imageClass = ImageClass.EMPTY;
 
@@ -129,9 +131,9 @@ public class ImageClassifier {
 
     }
 
-    public Detection classifyImageBWSmall(Mat image) {
+    public Detection classifyImageColorSmall(Mat image) {
 
-        System.out.println("Detection with Grayscale 320x320");
+        System.out.println("Detection with Color 320x320");
 
         ImageClass imageClass = ImageClass.EMPTY;
 
@@ -142,6 +144,126 @@ public class ImageClassifier {
 
         float bestConfidence = 0;
 
+        try {
+            ColorSmall model = ColorSmall.newInstance(context);
+
+            // Konvertoidaan Mat -> Bitmap
+
+            Bitmap origBitmap = Bitmap.createBitmap(image.cols(), image.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(image, origBitmap);
+            Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, imageSizeSmall, imageSizeSmall, false);
+
+            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, imageSizeSmall, imageSizeSmall, 3}, DataType.FLOAT32);
+
+            // Työnnetään bitmap inputfeatureen
+            inputFeature0.loadBuffer(getByteBuffer(bitmap));
+
+            // Runs model inference and gets result.
+            ColorSmall.Outputs outputs = model.process(inputFeature0);
+
+            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+            TensorBuffer outputFeature1 = outputs.getOutputFeature1AsTensorBuffer();
+            TensorBuffer outputFeature2 = outputs.getOutputFeature2AsTensorBuffer();
+            TensorBuffer outputFeature3 = outputs.getOutputFeature3AsTensorBuffer();
+
+            float[] confidences = outputFeature0.getFloatArray();
+            float[] detectionPoints = outputFeature1.getFloatArray();
+            int[] detections = outputFeature3.getIntArray();
+
+            int bestIndex = detections[0];
+            bestConfidence = confidences[0];
+
+            imageClass = ImageClass.values()[bestIndex];
+
+            dStartPointY = origBitmap.getHeight() * detectionPoints[0];
+            dStartPointX = origBitmap.getWidth() * detectionPoints[1];
+            dEndPointY = origBitmap.getHeight() * detectionPoints[2];
+            dEndPointX = origBitmap.getWidth() * detectionPoints[3];
+
+            if (bestConfidence < this.detectionThreshold) {
+                System.out.println("DETECTION DEBUG: Confidence under threshold. Setting output to EMPTY");
+                imageClass = ImageClass.EMPTY;
+            }
+
+            model.close();
+
+        } catch (IOException e) {
+            // TODO Handle the exception
+        }
+
+        return new Detection(imageClass, new Point(dStartPointX, dStartPointY), new Point(dEndPointX, dEndPointY), bestConfidence);
+
+    }
+
+    public Detection classifyImageBWSmall(Mat image) {
+
+
+        Mat image_bw = new Mat();
+        Imgproc.cvtColor(image, image_bw, Imgproc.COLOR_BGR2GRAY);
+
+        System.out.println("Detection with Grayscale 640x640");
+
+        ImageClass imageClass = ImageClass.EMPTY;
+
+        float dStartPointX = 0;
+        float dStartPointY = 0;
+        float dEndPointX = 0;
+        float dEndPointY = 0;
+
+        float bestConfidence = 0;
+
+        try {
+            BWSmall model = BWSmall.newInstance(context);
+
+            // Konvertoidaan Mat -> Bitmap
+
+            Bitmap origBitmap = Bitmap.createBitmap(image_bw.cols(), image_bw.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(image_bw, origBitmap);
+            Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, imageSizeSmall, imageSizeSmall, false);
+
+            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, imageSizeSmall, imageSizeSmall, 3}, DataType.FLOAT32);
+
+            // Työnnetään bitmap inputfeatureen
+            inputFeature0.loadBuffer(getByteBuffer(bitmap));
+
+            // Runs model inference and gets result.
+            BWSmall.Outputs outputs = model.process(inputFeature0);
+
+            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+            TensorBuffer outputFeature1 = outputs.getOutputFeature1AsTensorBuffer();
+            TensorBuffer outputFeature2 = outputs.getOutputFeature2AsTensorBuffer();
+            TensorBuffer outputFeature3 = outputs.getOutputFeature3AsTensorBuffer();
+
+            float[] confidences = outputFeature0.getFloatArray();
+            float[] detectionPoints = outputFeature1.getFloatArray();
+            int[] detections = outputFeature3.getIntArray();
+
+            System.out.println("Confidences " + Arrays.toString(confidences));
+            System.out.println("Detections " + Arrays.toString(detections));
+            System.out.println("Detection points " + Arrays.toString(detectionPoints));
+
+            int bestIndex = detections[0];
+            bestConfidence = confidences[0];
+
+            imageClass = ImageClass.values()[bestIndex];
+
+            dStartPointY = origBitmap.getHeight() * detectionPoints[0];
+            dStartPointX = origBitmap.getWidth() * detectionPoints[1];
+            dEndPointY = origBitmap.getHeight() * detectionPoints[2];
+            dEndPointX = origBitmap.getWidth() * detectionPoints[3];
+
+            if (bestConfidence < this.detectionThreshold) {
+                System.out.println("DETECTION DEBUG: Confidence under threshold. Setting output to EMPTY");
+                imageClass = ImageClass.EMPTY;
+            }
+
+            model.close();
+
+        } catch (IOException e) {
+            // TODO Handle the exception
+        }
 
         return new Detection(imageClass, new Point(dStartPointX, dStartPointY), new Point(dEndPointX, dEndPointY), bestConfidence);
     }
@@ -218,7 +340,7 @@ public class ImageClassifier {
 
     public Detection classifyImageBWLarge(Mat image) {
 
-        Mat image_bw = image.clone();
+        Mat image_bw = new Mat();
         Imgproc.cvtColor(image, image_bw, Imgproc.COLOR_BGR2GRAY);
 
         System.out.println("Detection with Grayscale 640x640");
@@ -289,7 +411,7 @@ public class ImageClassifier {
 
     public Detection classifyImageCDC(Mat image) {
 
-        Detection init = classifyImageColorSmall(image);
+        Detection init = classifyImageColorSmallOld(image);
 
         System.out.println("Detection with CDC");
 

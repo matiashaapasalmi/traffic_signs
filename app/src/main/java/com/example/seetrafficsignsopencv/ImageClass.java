@@ -9,8 +9,6 @@ public enum ImageClass {
     SL_80(R.drawable.sl80),
     SL_100(R.drawable.sl100),
     SL_120(R.drawable.sl120),
-    SL_100d(R.drawable.sl100),
-    SL_120d(R.drawable.sl120),
     EMPTY(R.drawable.sle);
 
     private final int id;

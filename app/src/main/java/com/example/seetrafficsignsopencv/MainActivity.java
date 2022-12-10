@@ -6,13 +6,10 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.Toast;
 
-import androidx.preference.Preference;
+import android.widget.Button;
+import android.widget.ImageView;
+
 import androidx.preference.PreferenceManager;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -21,7 +18,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
+
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -33,29 +30,23 @@ public class MainActivity extends CameraActivity {
 
     private ImageClassifier imageClassifier;
 
-    private static String LOGTAG = "OpenCV_Log";
+    private final static String LOGTAG = "OpenCV_Log";
     private CameraBridgeViewBase mOpenCvCameraView;
 
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+    private final BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.v(LOGTAG, "OpenCV loaded");
-                    mOpenCvCameraView.enableView();
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
+            if (status == LoaderCallbackInterface.SUCCESS) {
+                Log.v(LOGTAG, "OpenCV loaded");
+                mOpenCvCameraView.enableView();
+            } else {
+                super.onManagerConnected(status);
             }
 
         }
     };
 
     Button btn_setting, btn_camera, btn_exit;
-    FrameLayout frameLayout;
     Boolean debug_mode;
     String model;
 
@@ -83,32 +74,23 @@ public class MainActivity extends CameraActivity {
 
         btn_exit = findViewById(R.id.btn_exit);
 
-        btn_setting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(intent);
-            }
+        btn_setting.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
         });
 
-        btn_camera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mOpenCvCameraView.getAlpha() == 0) {
-                    mOpenCvCameraView.setAlpha(1);
-                } else {
-                    mOpenCvCameraView.setAlpha(0);
-                }
-           }
-        });
-
-        btn_exit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                moveTaskToBack(true);
-                android.os.Process.killProcess(android.os.Process.myPid());
-                System.exit(1);
+        btn_camera.setOnClickListener(view -> {
+            if (mOpenCvCameraView.getAlpha() == 0) {
+                mOpenCvCameraView.setAlpha(1);
+            } else {
+                mOpenCvCameraView.setAlpha(0);
             }
+       });
+
+        btn_exit.setOnClickListener(view -> {
+            moveTaskToBack(true);
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(1);
         });
 
     }
@@ -118,7 +100,7 @@ public class MainActivity extends CameraActivity {
         return Collections.singletonList(mOpenCvCameraView);
     }
 
-    private CameraBridgeViewBase.CvCameraViewListener2 cvCameraViewListener = new CameraBridgeViewBase.CvCameraViewListener2() {
+    private final CameraBridgeViewBase.CvCameraViewListener2 cvCameraViewListener = new CameraBridgeViewBase.CvCameraViewListener2() {
         @Override
         public void onCameraViewStarted(int width, int height) {
 
@@ -136,40 +118,40 @@ public class MainActivity extends CameraActivity {
 
                 Mat input_rgba = inputFrame.rgba();
 
-                Detection detection = null;
+                Detection detection;
 
                 System.out.println("Detection with: " + model);
 
-                if (model.equals("640BW")) {
-                    detection = imageClassifier.classifyImageBWLarge(input_rgba);
-                } else if (model.equals("640C")) {
-                    detection = imageClassifier.classifyImageColorLarge(input_rgba);
-                } else if (model.equals("CDC")) {
-                    detection = imageClassifier.classifyImageCDC(input_rgba);
-                } else if (model.equals("320BW")) {
-                    detection = imageClassifier.classifyImageBWSmall(input_rgba);
-                } else if (model.equals("320C")) {
-                    detection = imageClassifier.classifyImageColorSmall(input_rgba);
-                } else {
-                    detection = imageClassifier.classifyImage(input_rgba);
-                } // 320C
+                switch (model) {
+                    case "640BW":
+                        detection = imageClassifier.classifyImageBWLarge(input_rgba);
+                        break;
+                    case "640C":
+                        detection = imageClassifier.classifyImageColorLarge(input_rgba);
+                        break;
+                    case "CDC":
+                        detection = imageClassifier.classifyImageCDC(input_rgba);
+                        break;
+                    case "320BW":
+                        detection = imageClassifier.classifyImageBWSmall(input_rgba);
+                        break;
+                    case "320C":
+                        detection = imageClassifier.classifyImageColorSmall(input_rgba);
+                        break;
+                    case "320C_1.1":
+                        detection = imageClassifier.classifyImageColorSmallOld(input_rgba);
+                        break;
+                    default:
+                        detection = imageClassifier.classifyImage(input_rgba);
+                        break;
+                }
 
                 ImageClass frameClass = detection.imgClass;
 
                 ImageView speedImage = (ImageView) findViewById(R.id.SLDisplay);
-                // Päivittää UI:ta crashaa ilman
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-
-                        // Stuff that updates the UI
-                        // Updates speed limit image
-
-                        if (frameClass != ImageClass.EMPTY) {
-                            // Tällä laitetaan luokittelun mukainen kuva näkyviin ruutuun
-                            speedImage.setImageResource(frameClass.id());
-                        }
+                runOnUiThread(() -> {
+                    if (frameClass != ImageClass.EMPTY) {
+                        speedImage.setImageResource(frameClass.id());
                     }
                 });
 
@@ -216,6 +198,4 @@ public class MainActivity extends CameraActivity {
             mOpenCvCameraView.disableView();
         }
     }
-
-
 }
