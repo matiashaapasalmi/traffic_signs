@@ -411,7 +411,7 @@ public class ImageClassifier {
 
     public Detection classifyImageCDC(Mat image) {
 
-        Detection init = classifyImageColorSmallOld(image);
+        Detection init = classifyImageColorSmall(image);
 
         System.out.println("Detection with CDC");
 
